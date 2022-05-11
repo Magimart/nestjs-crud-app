@@ -1,7 +1,0 @@
-npm run start:dev  ---> constantly runs and watches any changes
-
-modified json
-    "start:dev": "nest start --watch"   -> "start:dev": "nodemon",
-    "start:debug": "nest start --debug --watch" -> "start:debug": "nodemon --config  nodemon-debug.json",
-
- 
