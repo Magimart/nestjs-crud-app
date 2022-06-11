@@ -1,68 +1,51 @@
-import { Controller, Get, Body, Post, Res, Req, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Body, Post, Res, Req, Param, Delete, Put, Query } from '@nestjs/common';
 import { creactItemsDto } from './dto/create-item.dto';
-import  {Request, Response } from 'express';
+// import  {Request, Response } from 'express';
 import { ItemsService } from './items.service';
-import { Item } from './interfaces/item.interface';
-
+import { Query as anotherQuery} from 'express-serve-static-core';
+import { Item } from './schemas/Item.schema';
+import { updateItemsDto } from './dto/update-item';
 
 
 @Controller('items')
 export class ItemsController {
 
-      constructor(private readonly cars: ItemsService){}  // helps us to inject our service in this case car items
+      constructor(private readonly cars: ItemsService){} 
   
-    @Get()
-                    //  findAll(): string {
-                    //      return "show all items"
-                    //  }
-    // get all items
-     findAll(): Item[] {
-        return this.cars.findAll();
+    // get all items: API Endpoint =>
+    @Get()                 
+    async fetchAllItems(@Query() query: anotherQuery ): Promise<Item[] >{ 
+        return this.cars.fetchAll(query);
     }
 
+    // add new item: API Endpoint =>
+    @Post()
+    async createItem(
+        @Body() car: creactItemsDto): Promise <Item>{
+             let createdCar = this.cars.createCarItem(car)
+             console.log(createdCar)
+            return createdCar;
+    }
 
-     //___lets run the above with the express option __Note this is not the Typescript way
-                        // findAll(@Req() req: Request, @Res() res:Response ): Response {
-                        //      console.log(req.url)
-                        //     return res.send(`we have recieved your request from  ${req.url}`);
-                        // }
-    
-    //get params
+    // get by id: API Endpoint =>
     @Get(':id')
-    //   findOne(@Param() param ): string{
-    //      return `Here is the requested item: ${param.id}`
-    // }
-
-    findOne(@Param('id') id ): Item{
-        // return `Here is the requested item: ${param.id}`
-            return this.cars.findOne(id);
+    async getItemById(@Param("id") id: string ): Promise<Item>{
+          return this.cars.findItemById(id);
     }
-   
+    
+    @Put(':id')
+    async updateDbItem(@Body() car: updateItemsDto,
+                           @Param('id') id: string): Promise<Item>{
+            await this.cars.findItemById(id)            
+        return this.cars.updateSavedItem(id, car) ;
+    }
 
-    //delete item
+    // delete item
     @Delete(':id')
-    delete(@Param('id') id ): string{
-        return `This item ${id} has been deleted`
-    }
-
-
-     @Post()
-
-     creact(@Body() creactItemsDto: creactItemsDto): string{
-        //  return "your article has been posted"
-        return `Name: ${creactItemsDto.name}  Description: ${creactItemsDto.description}`
-     }
-
-
-     //upadtate item
-     
-     @Put(':id')
-
-     update(@Body() updateItem: creactItemsDto, @Param('id') id): string{
-        return `This item ${updateItem.name} id: ${id} has been updated`
-     }
-
-
-     //
-
+    async deleteItem(@Param('id') id: string ): Promise<{isDeleted: Boolean, message: string}>{
+        const isItemToRemove = this.cars.deleteSavedItemById(id)
+        if(isItemToRemove){
+            return {isDeleted: true, message: "this item has been successfully removed"};
+        }
+    }   
 }

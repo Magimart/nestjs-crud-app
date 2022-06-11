@@ -1,53 +1,67 @@
-import { Injectable } from '@nestjs/common';
-import { Item } from './interfaces/item.interface';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Item } from './schemas/Item.schema';
+import * as mongoose from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Query } from  'express-serve-static-core';
 
 
 @Injectable()
 export class ItemsService {
+  
+            constructor(
+                @InjectModel(Item.name)
+                private itemModel: mongoose.Model<Item>
+            ){}
 
-    private readonly cars: Item[] = [
+    async fetchAll(query: Query): Promise<Item[]>{
 
-          
-        {
-            id: "29492fs",
-            name:"Toyota Aygo",
-            description: "this is a small 4 seat car, weighing about 400kgs",
-            qty: 4,
+            const queryStringKeyword = query.keyword? {
+                name: {
+                    $regex: query.keyword,
+                    $options: 'i'
+                }
+            }:{}
 
-        },
-        {
-            id: "1692fs",
-            name:"Bmw",
-            description: "this is a two seater electric car, with top speed of 200km per hour",
-            qty: 12,
+          const awaitAllQueries = await this.itemModel.find({...queryStringKeyword})
 
-        },
-        {
-            id: "2t92f5ld",
-            name:"Lada",
-            description: "A Russian Iconic branded car, manufactred and distributed by a french company Piere with top speed 219km/hr",
-            qty: 70,
+       return awaitAllQueries;
+    }
 
-        },
-        {
-            id: "4592f5lofe",
-            name:"Land rover",
-            description: "This i a diesel powered tourbo Engine, first released 1953 weighing about 1900kgs with top speed of 50miles/hr",
-            qty: 3,
+    async createCarItem(car: Item) : Promise<Item>{
+        const isCreatedCar = await this.itemModel.create(car)
+          return isCreatedCar;
+    }
+
+    async findItemById (id:string): Promise<Item>{
+        const foundItem = await this.itemModel.findById(id)
+        if(!foundItem){ 
+            throw new HttpException({
+                status: HttpStatus.FORBIDDEN,
+                error: 'Restaurant not available',
+              }, HttpStatus.FORBIDDEN)
 
         }
-    ]
-
-
-    findAll(): Item[]{
-        return this.cars
+        return foundItem;
     }
 
-    findOne(id:string): Item{
-        return this.cars.find((item) => item.id === id)
+    async updateSavedItem (id:string, car: Item): Promise<Item>{
+        const foundItem = this.itemModel.findByIdAndUpdate(id, car, {
+                                new: true,
+                                runValidators: true
+                            })
+        if(!foundItem){ 
+            throw new HttpException({
+                status: HttpStatus.FORBIDDEN,
+                error: 'Restaurant not available',
+              }, HttpStatus.FORBIDDEN)
+
+        }
+        return foundItem;
     }
+
+   async deleteSavedItemById(id: string): Promise<Item>{
+      return await this.itemModel.findById(id)
+   }
 
 
 }
-
-

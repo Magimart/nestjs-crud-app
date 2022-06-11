@@ -2,7 +2,9 @@
 /dist
 /node_modules
 
-
+#config keys:
+  configVariable
+  
 #notes
 /trash
 notes.txt

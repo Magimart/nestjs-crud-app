@@ -56,7 +56,18 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+
 ```
+## App is built and tested with Node version 17.0.0
+## please connect with mongodb Atlas
+
+## API endpoints for this app
+ Get all items ---> http://localhost:3000/items
+ Get items by id ---> http://localhost:3000/items/:id
+ should look something like this http://localhost:3000/items/62a44ce2ac4a5848320273fb
+ Post or Add new items ---> http://localhost:3000/items
+ Delete an Item  --->       http://localhost:3000/items/:id
+ Update or Edit an item ---> http://localhost:3000/restaurants/:id
 
 ## Support
 
